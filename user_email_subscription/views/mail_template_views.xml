@@ -5,10 +5,10 @@
         <field name="model">mail.template</field>
         <field name="inherit_id" ref="mail.email_template_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='name']" position="after">
-                <field name="is_user_subscribable"/>
+            <xpath expr="//field[@name='subject']" position="after">
+                <label for="is_user_subscribable" string="User Subscription Possible"/>
+                <field name="is_user_subscribable" nolabel="1"/>
             </xpath>
-
             <xpath expr="//form/sheet" position="inside">
                 <div class="oe_button_box" name="button_box">
                     <button name="action_view_unsubscribed_users"
@@ -27,7 +27,7 @@
     <record id="mail_template_list_user_subscription" model="ir.ui.view">
         <field name="name">mail.template.list.user.subscription</field>
         <field name="model">mail.template</field>
-        <field name="inherit_id" ref="mail.view_email_template_tree"/>
+        <field name="inherit_id" ref="mail.email_template_tree"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='name']" position="after">
                 <field name="is_user_subscribable"/>
