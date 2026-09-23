@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_users_form_user_subscription" model="ir.ui.view">
+        <field name="name">res.users.form.user.subscription</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page name="user_email_notifications" string="Notifications">
+                    <group>
+                        <field name="unsubscribed_template_ids"
+                               widget="many2many_checkboxes"
+                               options="{'no_create': True}"
+                               domain="[('is_user_subscribable', '=', True)]"/>
+                    </group>
+                </page>
+            </xpath>
+
+            <xpath expr="//form/sheet/div[@name='button_box']" position="inside">
+                <button name="action_view_unsubscribed_templates"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-envelope-o">
+                    <field name="unsubscribed_template_count"
+                           widget="statinfo"
+                           string="Unsubscribed"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

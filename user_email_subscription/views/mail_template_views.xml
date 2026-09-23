@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mail_template_form_user_subscription" model="ir.ui.view">
+        <field name="name">mail.template.form.user.subscription</field>
+        <field name="model">mail.template</field>
+        <field name="inherit_id" ref="mail.email_template_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="is_user_subscribable"/>
+            </xpath>
+
+            <xpath expr="//form/sheet" position="inside">
+                <div class="oe_button_box" name="button_box">
+                    <button name="action_view_unsubscribed_users"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-users">
+                        <field name="unsubscribed_user_count"
+                               widget="statinfo"
+                               string="Unsubscribed"/>
+                    </button>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="mail_template_list_user_subscription" model="ir.ui.view">
+        <field name="name">mail.template.list.user.subscription</field>
+        <field name="model">mail.template</field>
+        <field name="inherit_id" ref="mail.view_email_template_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="is_user_subscribable"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
