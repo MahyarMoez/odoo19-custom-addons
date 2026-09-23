@@ -35,5 +35,5 @@ class MailTemplate(models.Model):
             "res_model": "res.users",
             "view_mode": "list,form",
             "domain": [("id", "in", self.unsubscribed_user_ids.ids)],
-            "context": {"create": False},
+            "context": {"create": False, "subscription_template_id": self.id},
         }

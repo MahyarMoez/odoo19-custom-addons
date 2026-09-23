@@ -34,4 +34,21 @@
             </xpath>
         </field>
     </record>
+    <record id="action_resubscribe_selected_users" model="ir.actions.server">
+        <field name="name">Resubscribe Selected</field>
+        <field name="model_id" ref="base.model_res_users"/>
+        <field name="binding_model_id" ref="base.model_res_users"/>
+        <field name="binding_view_types">list</field>
+        <field name="group_ids" eval="[(4, ref('base.group_system'))]"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+template_id = env.context.get('subscription_template_id')
+template = env['mail.template'].browse(template_id).exists() if template_id else env['mail.template']
+if template:
+    opted_out_users = records.filtered(lambda user: template in user.unsubscribed_template_ids)
+    opted_out_users.write({'unsubscribed_template_ids': [(3, template.id)]})
+    action = {'type': 'ir.actions.client', 'tag': 'reload'}
+        ]]></field>
+    </record>
+
 </odoo>
