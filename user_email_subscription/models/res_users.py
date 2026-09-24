@@ -1,8 +1,25 @@
+from markupsafe import Markup
+
 from odoo import api, fields, models
 
 
 class ResUsers(models.Model):
     _inherit = "res.users"
+
+    @property
+    def SELF_READABLE_FIELDS(self):
+        return super().SELF_READABLE_FIELDS + [
+            "unsubscribed_template_ids",
+            "subscribed_template_ids",
+            "unsubscribed_template_count",
+        ]
+
+    @property
+    def SELF_WRITEABLE_FIELDS(self):
+        return super().SELF_WRITEABLE_FIELDS + [
+            "unsubscribed_template_ids",
+            "subscribed_template_ids",
+        ]
 
     unsubscribed_template_ids = fields.Many2many(
         comodel_name="mail.template",
@@ -52,42 +69,59 @@ class ResUsers(models.Model):
         for user in self:
             user.unsubscribed_template_count = len(user.unsubscribed_template_ids)
 
-    def action_subscribe_all_templates(self):
-        self.ensure_one()
-        subscribable_templates = self.env["mail.template"].search([
-            ("is_user_subscribable", "=", True),
-        ])
-        opted_out_templates = self.unsubscribed_template_ids & subscribable_templates
-        if opted_out_templates:
-            self.write({
-                "unsubscribed_template_ids": [
-                    (3, template.id) for template in opted_out_templates
-                ],
-            })
-        return {"type": "ir.actions.client", "tag": "reload"}
+    def write(self, vals):
+        tracks_subscriptions = bool({"unsubscribed_template_ids", "subscribed_template_ids"} & vals.keys())
+        previous_opt_outs = {
+            user.id: user.unsubscribed_template_ids
+            for user in self
+        } if tracks_subscriptions else {}
 
-    def action_unsubscribe_all_templates(self):
-        self.ensure_one()
-        subscribable_templates = self.env["mail.template"].search([
-            ("is_user_subscribable", "=", True),
-        ])
-        new_opt_outs = subscribable_templates - self.unsubscribed_template_ids
-        if new_opt_outs:
-            self.write({
-                "unsubscribed_template_ids": [
-                    (4, template.id) for template in new_opt_outs
-                ],
-            })
-        return {"type": "ir.actions.client", "tag": "reload"}
+        result = super().write(vals)
+        if tracks_subscriptions:
+            actor_name = self.env.user.display_name
+            for user in self:
+                previous = previous_opt_outs[user.id]
+                current = user.unsubscribed_template_ids
+                newly_opted_out = current - previous
+                newly_subscribed = previous - current
+                if not newly_opted_out and not newly_subscribed:
+                    continue
+
+                changed_at = fields.Datetime.context_timestamp(
+                    user, fields.Datetime.now()
+                ).strftime("%Y-%m-%d %H:%M:%S %Z")
+                body = Markup(
+                    "<p>Subscription preferences changed by %s at %s.</p>"
+                ) % (actor_name, changed_at)
+                if newly_opted_out:
+                    body += Markup("<p>Unsubscribed from: %s</p>") % ", ".join(
+                        newly_opted_out.mapped("display_name")
+                    )
+                if newly_subscribed:
+                    body += Markup("<p>Subscribed to: %s</p>") % ", ".join(
+                        newly_subscribed.mapped("display_name")
+                    )
+                user.partner_id.message_post(
+                    body=body,
+                    message_type="notification",
+                    subtype_xmlid="mail.mt_note",
+                )
+        return result
+
     def action_view_unsubscribed_templates(self):
         self.ensure_one()
         return {
             "type": "ir.actions.act_window",
-            "name": "Unsubscribed Email Templates",
+            "name": "Email Subscriptions",
             "res_model": "mail.template",
             "view_mode": "list,form",
-            "domain": [("id", "in", self.unsubscribed_template_ids.ids)],
-            "context": {"create": False},
+            "domain": [
+                ("is_user_subscribable", "=", True),
+            ],
+            "context": {
+                "create": False,
+                "subscription_user_id": self.id,
+            },
         }
 
     def _is_unsubscribed_from_template(self, template):

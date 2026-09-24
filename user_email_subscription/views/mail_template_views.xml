@@ -47,6 +47,50 @@ template = env['mail.template'].browse(template_id).exists() if template_id else
 if template:
     opted_out_users = records.filtered(lambda user: template in user.unsubscribed_template_ids)
     opted_out_users.write({'unsubscribed_template_ids': [(3, template.id)]})
+    action = {
+        'type': 'ir.actions.act_window',
+        'name': 'Unsubscribed Users',
+        'res_model': 'res.users',
+        'view_mode': 'list,form',
+        'domain': [
+            ('share', '=', False),
+            ('unsubscribed_template_ids', 'in', template.id),
+        ],
+        'context': {'create': False, 'subscription_template_id': template.id},
+    }
+        ]]></field>
+    </record>
+
+    <record id="action_subscribe_selected_templates_for_user" model="ir.actions.server">
+        <field name="name">Subscribe to Selected Templates</field>
+        <field name="model_id" ref="mail.model_mail_template"/>
+        <field name="binding_model_id" ref="mail.model_mail_template"/>
+        <field name="binding_view_types">list</field>
+        <field name="group_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+user_id = env.context.get('subscription_user_id') or env.user.id
+user = env['res.users'].browse(user_id).exists()
+templates = records.filtered(lambda template: template.is_user_subscribable)
+if user and templates and (user == env.user or env.user.has_group('base.group_system')):
+    user.write({'unsubscribed_template_ids': [(3, template.id) for template in templates]})
+    action = {'type': 'ir.actions.client', 'tag': 'reload'}
+        ]]></field>
+    </record>
+
+    <record id="action_unsubscribe_selected_templates_for_user" model="ir.actions.server">
+        <field name="name">Unsubscribe from Selected Templates</field>
+        <field name="model_id" ref="mail.model_mail_template"/>
+        <field name="binding_model_id" ref="mail.model_mail_template"/>
+        <field name="binding_view_types">list</field>
+        <field name="group_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+user_id = env.context.get('subscription_user_id') or env.user.id
+user = env['res.users'].browse(user_id).exists()
+templates = records.filtered(lambda template: template.is_user_subscribable)
+if user and templates and (user == env.user or env.user.has_group('base.group_system')):
+    user.write({'unsubscribed_template_ids': [(4, template.id) for template in templates]})
     action = {'type': 'ir.actions.client', 'tag': 'reload'}
         ]]></field>
     </record>

@@ -8,15 +8,6 @@
             <xpath expr="//notebook" position="inside">
                 <page name="user_email_notifications" string="Notifications">
                     <group>
-                        <button name="action_subscribe_all_templates"
-                                type="object"
-                                string="Subscribe All"
-                                class="btn-secondary"/>
-                        <button name="action_unsubscribe_all_templates"
-                                type="object"
-                                string="Unsubscribe All"
-                                class="btn-secondary"
-                                confirm="Unsubscribe from all currently available email templates?"/>
                         <field name="subscribed_template_ids"
                                string="Email Subscriptions"
                                widget="many2many_checkboxes"
