@@ -1,20 +1,18 @@
 # User Email Subscription
 
-Prototype Odoo 19 add-on for the Cloudunify Developer Mustercase.
+Prototype Odoo 19 add-on for the Cloudunify Developer sample case.
 
 ## What it implements
 
-- Adds `is_user_subscribable` to `mail.template`.
-- Adds an opt-out-only Many2many relation between `res.users` and `mail.template`.
-- Adds a Notifications tab to the user form.
-- Adds Smart Buttons for unsubscribed users/templates.
-- Keeps only explicit opt-outs in the pivot relation.
+* Adds `is_user_subscribable` to `mail.template`.
+* Adds a Many2many opt-out relation between `res.users` and `mail.template`.
+* Adds a **Notifications** tab to the user form.
+* Adds **Smart buttons** showing the total number of unsubscribed users and templates.
+* Adds a Resubscribe Selected _action_ to Email Templates.
+* Adds Subscribe to Selected Templates and Unsubscribe from Selected Templates _actions_ to the User form.
+* Logs subscription and unsubscription changes in the user's chatter.
+* Filters emails based on the user's subscription status for subscribable email templates.
 
-## Important
-
-This repository is intentionally a **prototype scaffold**. The remaining critical part of the mustercase is the version-specific integration with Odoo's actual mail dispatch path so unsubscribed users are removed from outgoing recipients, including follower notifications.
-
-Before presenting, verify the exact Odoo 19 mail flow in the target environment and implement that dispatch filter with tests/demo evidence.
 
 ## Installation
 
@@ -23,16 +21,14 @@ Before presenting, verify the exact Odoo 19 mail flow in the target environment 
 3. Update the Apps list.
 4. Install **User Email Subscription**.
 
-## Demo idea
+## Usage
 
-1. Mark a normal mail template as User Subscription Possible.
-2. Open an internal user and opt out.
-3. Show the opt-out relation.
-4. Send the template through the supported Odoo flow.
-5. Demonstrate that the opted-out user is excluded.
-6. Re-subscribe using the Smart Button/bulk action.
-7. Repeat the send.
+1. Mark a regular mail template as **User Subscription Possible**.
+2. Open an internal user and opt out of the template from the **Notifications** tab.
+3. Send the template through a supported Odoo flow. The email will be sent or filtered based on the user's subscription status.
+4. For administrators, use the **Smart Button** or **bulk action** to resubscribe users.
+
 
 ## Scope
 
-Only `res.users` is supported. Portal users, partners, mailing lists, scheduling, snooze, external integrations, performance tuning and full automated test coverage are outside the mustercase scope.
+Only `res.users` is supported. Portal users, partners, mailing lists, scheduling, snooze, external integrations, performance tuning and full automated test coverage are outside the scope.
